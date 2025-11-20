@@ -1,0 +1,307 @@
+Documento de Especificação Funcional (DEF)
+
+ Visão geral do projeto
+Nome do Software: MotoJá
+Versão: 1.0
+Data: [11/11/2025]
+Autor(es): Elder Lopes Santos, Joaci Ramos de Jesus
+Aprovado por: 
+1. Introdução
+O Documento de Especificação Funcional (DEF) funciona como um manual de referência, elaborado principalmente para orientar o desenvolvimento do sistema MotoJá. Esse aplicativo tem como objetivo gerenciar e facilitar a solicitação de serviços de mototáxi. O DEF organiza e descreve os requisitos funcionais e não funcionais do sistema, garantindo que todos os envolvidos, desenvolvedores, administradores e usuários compreendam seu funcionamento, desde as funções básicas até as soluções oferecidas pela plataforma. Nesse documento também são detalhadas as etapas de design e implementação, assegurando aos usuários uma experiência eficiente, rápida e alinhada às demandas do mercado de transporte.
+1.1 Propósito
+Este documento descreve as funcionalidades, interfaces e comportamentos esperados do sistema MotoJá, uma aplicação voltada para o gerenciamento e solicitação de corridas de mototáxi.
+O objetivo do sistema é conectar passageiros e mototaxistas, permitindo que o usuário solicite uma corrida, visualize o trajeto e efetue o pagamento de forma prática, rápida e segura.
+1.2 Escopo
+O sistema MotoJá permitirá:
+Cadastro de mototaxistas, incluindo dados pessoais, documentos e fotos;
+
+
+Cadastro de clientes/passageiros;
+
+
+Solicitação de corridas com base na localização e disponibilidade dos mototaxistas;
+
+
+Cálculo automático de distância e valor da corrida (por km ou valor fixo);
+
+
+Exibição de trajeto no mapa;
+
+
+Avaliação de motoristas;
+
+
+Pagamentos via cartão de crédito ou integração bancária;
+
+
+Painel administrativo para acompanhamento de corridas e usuários.
+
+
+1.3 Definições, acrônimos e abreviações
+Termo
+Definição
+DEF
+Documento de Especificação Funcional
+GUI
+Interface Gráfica do Usuário
+API
+Interface de Programação de Aplicações
+GPS
+Sistema de Posicionamento Global
+APP
+Aplicativo móvel MotoJá
+USUÁRIO
+Pessoa que utiliza o sistema (mototaxista ou passageiro)
+
+2. Descrição Geral
+2.1 Perspectiva do Produto
+O sistema MotoJá será um aplicativo multiplataforma (Android e Web inicialmente) que permitirá a interação entre passageiros e mototaxistas.
+A aplicação será composta por dois módulos principais:
+Módulo Passageiro: Solicitação de corridas, acompanhamento e pagamento;
+
+
+Módulo Mototaxista: Recebimento de solicitações, aceitação e controle de viagens.
+
+
+O sistema será desenvolvido utilizando Python (backend com Flask ou FastAPI) e frameworks mobile/web (como React Native ou Flutter), com integração a APIs de mapa (ex: Google Maps ou OpenStreetMap).
+
+
+2.2 Funções do Produto
+O sistema deve oferecer as seguintes funcionalidades principais:
+Cadastro de Mototaxista: Inclusão de nome, CPF, endereço, telefone, CNH, documento da moto e foto do veículo.
+
+
+Cadastro de Passageiro: Inclusão de nome, endereço, e-mail e telefone.
+
+
+Login e Autenticação: Permitir acesso seguro aos usuários.
+
+
+Solicitação de Corrida: Localização atual e destino definidos pelo passageiro.
+
+
+Busca de Motorista Próximo: Localizar e atribuir o mototaxista mais próximo.
+
+
+Exibição de Trajeto: Mostrar rota e tempo estimado.
+
+
+Cálculo de Preço: Baseado na distância ou tabela de bairros.
+
+
+Avaliação do Mototaxista: Após a corrida, o passageiro poderá avaliar o serviço.
+
+
+Pagamento Online: Via cartão de crédito ou app bancário integrado.
+
+
+Histórico de Corridas: Disponível para ambos os usuários.
+
+
+
+
+2.3 Características dos Usuários
+
+Tipo de Usuário
+Descrição
+Nível Técnico
+Passageiro
+Usuário que solicita corridas.
+Básico
+Mototaxista
+Usuário que realiza as corridas.
+Básico
+Administrador
+Responsável por supervisionar o sistema e os cadastros.
+Intermediário
+
+
+2.4 Restrições
+O sistema deverá ser compatível com Android 10+ e navegadores modernos (Chrome, Edge, Firefox);
+
+
+Deverá possuir acesso à internet para funcionamento;
+
+
+O uso de geolocalização (GPS) é obrigatório para corridas;
+
+
+Deverá respeitar as leis de proteção de dados (LGPD).
+
+
+2.5 Suposições e Dependências
+Usuários possuem dispositivos com GPS e internet;
+
+
+Os dados fornecidos nos cadastros são verídicos;
+
+
+APIs de geolocalização (Google Maps/OpenStreetMap) estão disponíveis;
+
+
+Serviços de pagamento online estão operacionais.
+
+
+
+3. Requisitos Funcionais (RF)
+Código
+Descrição
+RF001
+O sistema deve permitir o cadastro e login de passageiros e mototaxistas.
+RF002
+O mototaxista deve cadastrar seus documentos e foto da moto.
+RF003
+O sistema deve permitir ao passageiro solicitar uma corrida informando o destino.
+RF004
+O sistema deve localizar o mototaxista mais próximo do passageiro.
+RF005
+O sistema deve exibir o trajeto no mapa com distância e tempo estimado.
+RF006
+O sistema deve calcular o valor da corrida com base na distância percorrida ou bairro.
+RF007
+O passageiro deve poder realizar pagamento via cartão ou app bancário.
+RF008
+O passageiro deve poder avaliar o mototaxista após a corrida.
+RF009
+O mototaxista deve poder aceitar ou recusar corridas.
+RF010
+O sistema deve manter histórico de corridas para ambos os usuários.
+
+
+4. Requisitos Não Funcionais (RNF)
+Código
+Descrição
+RNF001
+O tempo de resposta ao solicitar uma corrida deve ser inferior a 3 segundos.
+RNF002
+O sistema deve seguir princípios de usabilidade e acessibilidade.
+RNF003
+O app deve utilizar criptografia para proteger dados e transações.
+RNF004
+O sistema deve ter disponibilidade mínima de 99% durante o horário comercial.
+RNF005
+O backend deve ser documentado com pdoc e seguir padrões de código limpo.
+RNF006
+O sistema deve estar em conformidade com a LGPD.
+
+
+5. Interfaces do Sistema
+5.1 Interface do Usuário
+A interface deve conter:
+Tela de login/cadastro;
+
+
+Tela de solicitação de corrida (origem e destino com mapa);
+
+
+Tela de corrida em andamento com rota e tempo estimado;
+
+
+Tela de avaliação e pagamento;
+
+
+Painel de mototaxista com status (disponível/ocupado);
+
+
+Painel administrativo (gerenciamento de cadastros e corridas).
+
+
+5.2 Interfaces de Hardware
+Dispositivos móveis Android com GPS, internet e câmera.
+
+
+Servidor de hospedagem do backend.
+5.3 Interfaces de Software
+Backend: Python (Flask ou FastAPI);
+
+
+Banco de Dados: PostgreSQL ou MySQL;
+
+
+Frontend: React Native ou Flutter;
+
+
+API de mapas: Google Maps API / OpenStreetMap;
+
+
+Biblioteca de documentação: pdoc.
+5.4 Interfaces de Comunicação
+Comunicação via HTTP/HTTPS entre cliente e servidor;
+
+
+Integração com API de pagamento;
+
+
+Geolocalização via API de mapas.
+6. Requisitos de Qualidade
+Atributo
+Descrição
+Usabilidade
+Interface intuitiva e moderna, adaptada para uso em smartphones.
+Confiabilidade
+Corridas registradas e armazenadas com integridade.
+Manutenibilidade
+Código modular e documentado com pdoc.
+Portabilidade
+Suporte a Android e navegadores.
+Eficiência
+Baixo consumo de bateria e dados móveis.
+Segurança
+Autenticação segura e criptografia de dados.
+
+7. Casos de Uso
+
+7.1. UC001 - Solicitar Corrida
+Passageiro faz login.
+
+
+Informa origem e destino.
+
+
+Sistema localiza mototaxista mais próximo.
+
+
+Mototaxista aceita a corrida.
+
+
+Sistema exibe trajeto e tempo estimado.
+
+
+Corrida é iniciada.
+
+
+Passageiro efetua pagamento.
+
+
+Passageiro avalia o mototaxista.
+7.1.2 UC002 - Aceitar corrida
+Mototaxista recebe notificação
+Analisa corrida
+Aceita corrida
+Corrida inicia
+
+7.1.3 UC002 - Finalizar corrida e pagar
+Mototaxista finaliza
+Sistema calcula valor
+Passageiro paga
+Avalia
+
+ 
+8. Casos de Teste (CT)
+Caso de Teste
+Entrada
+Resultado Esperado
+CT001 (Soma)
+5 + 3
+8
+CT002 (Divisão por zero)
+10 / 0
+"Erro"
+CT003 (Raiz quadrada)
+√9
+3
+
+
+
+
+
