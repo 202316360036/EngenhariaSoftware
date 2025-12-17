@@ -1,0 +1,41 @@
+# Planejamento dos Sprints — MotoJá
+
+## Sprint 0 — Fundação e Infraestrutura (1 semana)
+Objetivo: preparar o ambiente de desenvolvimento.
+Entregas:
+- Repositório e organização do projeto
+- Projeto base Flutter + navegação inicial
+- API FastAPI “Hello World” + conexão com PostgreSQL
+
+## Sprint 1 — Identidade e Segurança (1 semana)
+Relacionados: RF001, RF002, RNF003
+Entregas:
+- Cadastro/Login (passageiro e mototaxista)
+- Upload de documentos do mototaxista
+- JWT e regras de segurança básica
+
+## Sprint 2 — Solicitação e Match (1 semana)
+Relacionados: RF003, RF004, RF006 (estimativa), RF009
+Entregas:
+- Solicitar corrida (origem GPS + destino)
+- Buscar motorista mais próximo
+- Aceitar/recusar corrida (timer 15s)
+
+## Sprint 3 — Rota e Acompanhamento (1 semana)
+Relacionados: RF005
+Entregas:
+- Exibir rota e tempo estimado
+- Estados de corrida (a caminho / iniciou / finalizou)
+
+## Sprint 4 — Pagamento e Avaliação + Admin (1 semana)
+Relacionados: RF007, RF008
+Entregas:
+- Pagamento (integração/mode mock)
+- Avaliação do motorista
+- Painel admin (aprovar motorista)
+
+## Sprint 5 — Refinamento e Entrega (1 semana)
+Relacionados: RNF001, RNF002
+Entregas:
+- Testes, correções e usabilidade
+- Documentação final e preparação da apresentação
