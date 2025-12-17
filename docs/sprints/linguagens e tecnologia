@@ -1,0 +1,24 @@
+# Linguagens e Tecnologias — MotoJá
+
+## Mobile
+- Flutter (Dart)
+
+## Backend (API)
+- Python + FastAPI
+
+## Banco de dados
+- PostgreSQL
+
+## Autenticação
+- JWT (token)
+
+## Mapas / Geolocalização
+- Google Maps API (alternativa: OpenStreetMap)
+
+## Infra / Dev
+- Git + GitHub
+- Docker (ambiente de desenvolvimento)
+
+## Documentação
+- pdoc (backend Python)
+- README + docs em Markdown no GitHub
