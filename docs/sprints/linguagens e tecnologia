@@ -1,24 +1,33 @@
-# Linguagens e Tecnologias — MotoJá
+Plataforma (Web Responsivo)
 
-## Mobile
-- Flutter (Dart)
+Next.js (React) + TypeScript
 
-## Backend (API)
-- Python + FastAPI
+Backend (API)
 
-## Banco de dados
-- PostgreSQL
+API Routes do Next.js (backend dentro do próprio projeto)
 
-## Autenticação
-- JWT (token)
+Banco de dados
 
-## Mapas / Geolocalização
-- Google Maps API (alternativa: OpenStreetMap)
+SQLite (arquivo local)
 
-## Infra / Dev
-- Git + GitHub
-- Docker (ambiente de desenvolvimento)
+ORM / Acesso a dados
 
-## Documentação
-- pdoc (backend Python)
-- README + docs em Markdown no GitHub
+Prisma ORM
+
+Autenticação
+
+JWT (token)
+
+Mapas / Geolocalização
+
+Google Maps
+
+Infra / Dev
+
+Git + GitHub
+
+Docker 
+
+Documentação
+
+README + docs em Markdown no GitHub
