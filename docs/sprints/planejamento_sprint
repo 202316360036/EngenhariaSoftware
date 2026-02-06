@@ -1,41 +1,79 @@
 # Planejamento dos Sprints — MotoJá
 
-## Sprint 0 — Fundação e Infraestrutura (1 semana)
+Sprint 0 — Fundação e Infraestrutura (1 semana)
+
 Objetivo: preparar o ambiente de desenvolvimento.
 Entregas:
-- Repositório e organização do projeto
-- Projeto base Flutter + navegação inicial
-- API FastAPI “Hello World” + conexão com PostgreSQL
 
-## Sprint 1 — Identidade e Segurança (1 semana)
+Repositório e organização do projeto (GitHub)
+
+Projeto base Next.js + TypeScript (web responsivo) + navegação inicial
+
+Banco SQLite + Prisma (schema + migrations/db push)
+
+API Routes do Next.js (Hello World + health check)
+
+Seed de dados de teste (usuários e motoristas demo)
+
+Sprint 1 — Identidade e Segurança (1 semana)
+
 Relacionados: RF001, RF002, RNF003
 Entregas:
-- Cadastro/Login (passageiro e mototaxista)
-- Upload de documentos do mototaxista
-- JWT e regras de segurança básica
 
-## Sprint 2 — Solicitação e Match (1 semana)
+Cadastro/Login (passageiro e mototaxista)
+
+JWT (token) + proteção de rotas (passageiro/driver/admin)
+
+Upload de documentos do mototaxista (modo mock)
+
+Validações básicas e tratamento de erros
+
+Sprint 2 — Solicitação e Match (1 semana)
+
 Relacionados: RF003, RF004, RF006 (estimativa), RF009
 Entregas:
-- Solicitar corrida (origem GPS + destino)
-- Buscar motorista mais próximo
-- Aceitar/recusar corrida (timer 15s)
 
-## Sprint 3 — Rota e Acompanhamento (1 semana)
+Solicitar corrida (origem + destino)
+
+Buscar motorista mais próximo (proximidade)
+
+Oferta ao motorista + timer de 15s (aceitar/recusar)
+
+Estados: requested → offered → accepted/expired
+
+Sprint 3 — Rota e Acompanhamento (1 semana)
+
 Relacionados: RF005
 Entregas:
-- Exibir rota e tempo estimado
-- Estados de corrida (a caminho / iniciou / finalizou)
 
-## Sprint 4 — Pagamento e Avaliação + Admin (1 semana)
+Cálculo de distância e tempo estimado
+
+OpenStreetMap/OpenRouteService (rota real) ou
+
+Fallback: Haversine (modo simulação)
+
+Estados da corrida: on_the_way → in_progress → finished
+
+Tela de acompanhamento + histórico do usuário
+
+Sprint 4 — Pagamento e Avaliação + Admin (1 semana)
+
 Relacionados: RF007, RF008
 Entregas:
-- Pagamento (integração/mode mock)
-- Avaliação do motorista
-- Painel admin (aprovar motorista)
 
-## Sprint 5 — Refinamento e Entrega (1 semana)
+Pagamento (modo mock)
+
+Avaliação do motorista (estrelas + comentário)
+
+Painel admin: aprovar/reprovar mototaxista (pending/approved/rejected)
+
+Sprint 5 — Refinamento e Entrega (1 semana)
+
 Relacionados: RNF001, RNF002
 Entregas:
-- Testes, correções e usabilidade
-- Documentação final e preparação da apresentação
+
+Testes básicos, correções e usabilidade
+
+Documentação final (README + instruções de execução + contas demo)
+
+Preparação da apresentação (roteiro + prints/telas)
