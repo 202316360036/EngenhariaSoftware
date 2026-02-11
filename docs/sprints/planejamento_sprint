@@ -9,7 +9,7 @@ Repositório e organização do projeto (GitHub)
 
 Projeto base Next.js + TypeScript (web responsivo) + navegação inicial
 
-Banco SQLite + Prisma (schema + migrations/db push)
+Banco SQLite + Prisma 
 
 API Routes do Next.js (Hello World + health check)
 
@@ -24,7 +24,7 @@ Cadastro/Login (passageiro e mototaxista)
 
 JWT (token) + proteção de rotas (passageiro/driver/admin)
 
-Upload de documentos do mototaxista (modo mock)
+Upload de documentos do mototaxista 
 
 Validações básicas e tratamento de erros
 
@@ -48,11 +48,9 @@ Entregas:
 
 Cálculo de distância e tempo estimado
 
-OpenStreetMap/OpenRouteService (rota real) ou
+OpenStreetMap/OpenRouteService (rota real) 
 
-Fallback: Haversine (modo simulação)
-
-Estados da corrida: on_the_way → in_progress → finished
+Estados da corrida: a_caminho → em_andamento → concluído
 
 Tela de acompanhamento + histórico do usuário
 
@@ -61,11 +59,11 @@ Sprint 4 — Pagamento e Avaliação + Admin (1 semana)
 Relacionados: RF007, RF008
 Entregas:
 
-Pagamento (modo mock)
+Pagamento 
 
 Avaliação do motorista (estrelas + comentário)
 
-Painel admin: aprovar/reprovar mototaxista (pending/approved/rejected)
+Painel admin: aprovar/reprovar mototaxista (pendente/aprovado/rejeitado)
 
 Sprint 5 — Refinamento e Entrega (1 semana)
 
