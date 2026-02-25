@@ -1,33 +1,29 @@
-Plataforma (Web Responsivo)
+*Frontend*
+ HTML - Estrutura das páginas 
+CSS3 -  Estilização e layout 
+Bootstrap - Framework CSS pronto - Facilita muito criar telas bonitas e responsivas sem sofrer com CSS puro 
+JavaScript 
 
-Next.js (React) + TypeScript
 
-Backend (API)
+*Backend*
 
-API Routes do Next.js (backend dentro do próprio projeto)
+Node.js - Rodar JavaScript no servidor - É JavaScript, mesma linguagem do front.
+Express.js - Criar as rotas da API
 
-Banco de dados
 
-SQLite (arquivo local)
+*Banco de Dados*
+MySQL - Guardar os dados (usuários, corridas, avaliações)
 
-ORM / Acesso a dados
 
-Prisma ORM
+*Mapa / Localização*
 
-Autenticação
+Leaflet.js - Mostrar mapa interativo na tela 
 
-JWT (token)
 
-Mapas / Geolocalização
+*Ferramentas de Apoio*
 
-Google Maps
-
-Infra / Dev
-
-Git + GitHub
-
-Docker 
-
-Documentação
-
-README + docs em Markdown no GitHub
+VS Code - Editor de código
+GitHub - Controle de versão, Issues, Milestones e organização do projeto
+Figma - Desenhar as telas antes de codar
+Postman - Testar as APIs do backend sem precisar do frontend pronto
+MySQL Workbench - Gerenciar o banco de dados MySQL localmente 
