@@ -1,77 +1,76 @@
-# Planejamento dos Sprints — MotoJá
+Sprint 0 — Planejamento e Requisitos
+Período: 05/11/2025 a 18/11/2025 (2 semanas)
+Objetivo: Antes de programar, entender bem o problema e deixar tudo pronto (ideia, requisitos e organização do projeto).
 
-Sprint 0 — Fundação e Infraestrutura (1 semana)
+Atividades:
 
-Objetivo: preparar o ambiente de desenvolvimento.
-Entregas:
+* Aplicar um questionário rápido com pelo menos 3 mototaxistas e 3 passageiros (pode ser por WhatsApp)
+* Anotar as dores principais e o que eles mais sentem falta num app desse tipo
+* Escrever os requisitos do sistema (o que é obrigatório no app e o que pode ficar para depois)
+* Fazer rascunhos das telas (no papel ou no Figma, bem simples mesmo)
+* Criar o repositório no GitHub e organizar as pastas do projeto
+* Dividir as tarefas da equipe (quem fica com o quê)
+* Criar as Issues e Milestones no GitHub para acompanhar o andamento
 
-Repositório e organização do projeto (GitHub)
+Sprint 1 — Cadastro e Login
+Período: 19/11/2025 a 02/12/2025 (2 semanas)
+Objetivo: Ter cadastro e login funcionando, tanto para passageiro quanto para mototaxista.
 
-Projeto base Next.js + TypeScript (web responsivo) + navegação inicial
+Atividades:
 
-Banco SQLite + Prisma 
+* Criar o banco de dados e a tabela de usuários (MySQL)
+* Montar a tela de cadastro (nome, telefone, e-mail, senha e tipo de usuário)
+* Montar a tela de login
+* Criar a API básica de registro e login no backend
+* Ligar o app no backend e testar cadastro/login de verdade
+* Fazer testes simples: cadastrar, logar e confirmar que entra na tela inicial
 
-API Routes do Next.js (Hello World + health check)
+Férias — Dezembro/2025
+Sem atividades no projeto nesse período (pausa por conta das férias).
 
-Seed de dados de teste (usuários e motoristas demo)
+Sprint 2 — Solicitação de Corrida e Mapa
+Período: 05/01/2026 a 18/01/2026 (2 semanas)
+Objetivo: O passageiro consegue solicitar uma corrida e o mototaxista consegue visualizar e aceitar.
 
-Sprint 1 — Identidade e Segurança (1 semana)
+Atividades:
 
-Relacionados: RF001, RF002, RNF003
-Entregas:
+* Criar a tela de solicitar corrida (origem e destino)
+* Mostrar o mapa com a localização (Google Maps API ou Leaflet)
+* Calcular uma estimativa simples de preço (ex: valor por km)
+* Criar a área do mototaxista com a lista de corridas disponíveis
+* Salvar cada corrida no banco com status (solicitada, aceita, finalizada)
 
-Cadastro/Login (passageiro e mototaxista)
+Sprint 3 — Avaliação, Histórico e Melhorias
+Período: 19/01/2026 a 01/02/2026 (2 semanas)
+Objetivo: Finalizar o básico e deixar o app mais completo: avaliação, histórico e ajustes.
 
-JWT (token) + proteção de rotas (passageiro/driver/admin)
+Atividades:
 
-Upload de documentos do mototaxista 
+* Após finalizar a corrida, permitir avaliação (nota de 1 a 5 estrelas)
+* Criar a tela de histórico com as corridas já feitas
+* Criar a tela de perfil (dados do usuário + avaliações)
+* Corrigir erros que foram aparecendo nas sprints anteriores
+* Melhorar a aparência geral das telas (layout e organização)
 
-Validações básicas e tratamento de erros
+Sprint 4 — Ajustes Finais e Entrega
+Período: 02/02/2026 a 11/02/2026 (aprox. 1,5 semana)
+Objetivo: Etapa final de entrega. Aqui é mais “arrumar e deixar pronto” do que adicionar coisas novas.
 
-Sprint 2 — Solicitação e Match (1 semana)
+Atividades:
 
-Relacionados: RF003, RF004, RF006 (estimativa), RF009
-Entregas:
+* Testar o fluxo completo do app (cadastro → login → pedir corrida → aceitar → finalizar → avaliar)
+* Corrigir os últimos bugs
+* Ajustar textos, detalhes visuais e organização das telas
+* Atualizar o README do GitHub com o passo a passo para rodar o projeto
+* Preparar a demonstração/apresentação para o professor
+* Anotar o que ficou pendente para uma versão futura (backlog)
 
-Solicitar corrida (origem + destino)
+O que ficou para depois:
 
-Buscar motorista mais próximo (proximidade)
-
-Oferta ao motorista + timer de 15s (aceitar/recusar)
-
-Estados: requested → offered → accepted/expired
-
-Sprint 3 — Rota e Acompanhamento (1 semana)
-
-Relacionados: RF005
-Entregas:
-
-Cálculo de distância e tempo estimado
-
-OpenStreetMap/OpenRouteService (rota real) 
-
-Estados da corrida: a_caminho → em_andamento → concluído
-
-Tela de acompanhamento + histórico do usuário
-
-Sprint 4 — Pagamento e Avaliação + Admin (1 semana)
-
-Relacionados: RF007, RF008
-Entregas:
-
-Pagamento 
-
-Avaliação do motorista (estrelas + comentário)
-
-Painel admin: aprovar/reprovar mototaxista (pendente/aprovado/rejeitado)
-
-Sprint 5 — Refinamento e Entrega (1 semana)
-
-Relacionados: RNF001, RNF002
-Entregas:
-
-Testes básicos, correções e usabilidade
-
-Documentação final (README + instruções de execução + contas demo)
-
-Preparação da apresentação (roteiro + prints/telas)
+| Funcionalidade              | Por que ficou para depois                                |
+| --------------------------- | -------------------------------------------------------- |
+| Pagamento por Pix integrado | Para o prazo atual ficaria pesado e exige mais segurança |
+| Rastreamento em tempo real  | Vai precisar de WebSocket e mais estrutura               |
+| Notificações push           | Depende de configuração e serviços externos              |
+| Painel administrativo       | Não é essencial para o MVP                               |
+| Deploy em produção          | A apresentação vai ser feita rodando local (localhost)   |
