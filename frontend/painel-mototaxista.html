@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoJá - Mototaxista</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-motoja">
+        <div class="container-fluid">
+            <span class="navbar-brand">Moto<span style="color:#FFC107">Já</span> 🏍️</span>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-white" id="nome-usuario" style="font-size:0.9rem;"></span>
+                <button class="btn btn-sm btn-sair btn-outline-warning" onclick="sair()">Sair</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-3 mb-5">
+
+        <!-- Alerta -->
+        <div id="alerta" class="alert d-none" role="alert"></div>
+
+        <!-- Toggle Online/Offline -->
+        <div class="toggle-status mb-3">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="toggle-online" checked style="width:3em; height:1.5em;">
+                <label class="form-check-label fw-bold" for="toggle-online" id="label-status">
+                    🟢 Online — recebendo corridas
+                </label>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SEÇÃO 1: Corrida aceita (quando tiver) -->
+        <!-- ============================================ -->
+        <div id="secao-corrida-aceita" class="d-none">
+            <div class="card-corrida" style="border-left-color: #28a745;">
+                <h5>🏍️ Sua corrida atual</h5>
+
+                <!-- Mapa da corrida -->
+                <div id="mapa-corrida" style="height:250px; border-radius:8px; margin-bottom:15px;"></div>
+
+                <p class="endereco origem mb-1" id="aceita-origem"></p>
+                <p class="endereco destino mb-2" id="aceita-destino"></p>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <strong>👤 Passageiro:</strong> <span id="aceita-passageiro"></span><br>
+                        <strong>📱 Telefone:</strong> <span id="aceita-telefone"></span>
+                    </div>
+                    <span class="preco" id="aceita-preco"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-motoja flex-fill" id="btn-iniciar" onclick="iniciarCorrida()">
+                        ▶️ Iniciar corrida
+                    </button>
+                    <button class="btn btn-aceitar flex-fill" id="btn-finalizar" onclick="finalizarCorrida()" style="display:none;">
+                        🏁 Finalizar corrida
+                    </button>
+                    <button class="btn btn-recusar" onclick="cancelarCorrida()">✖</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SEÇÃO 2: Corridas disponíveis -->
+        <!-- ============================================ -->
+        <div id="secao-disponiveis" class="painel-info mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">📋 Corridas disponíveis</h5>
+                <button class="btn btn-sm btn-outline-secondary" onclick="carregarDisponiveis()">🔄 Atualizar</button>
+            </div>
+            <div id="lista-disponiveis">
+                <div class="sem-corridas">
+                    <div class="icone">⏳</div>
+                    <p>Nenhuma corrida disponível no momento.<br>Aguarde novas solicitações...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SEÇÃO 3: Histórico -->
+        <!-- ============================================ -->
+        <div class="painel-info">
+            <h5>📋 Minhas corridas realizadas</h5>
+            <div id="historico-lista">
+                <p class="text-muted text-center">Carregando...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+        let usuario = null;
+        let corridaAceita = null;
+        let mapaCorrente = null;
+
+        // =============================================
+        // INICIALIZAÇÃO
+        // =============================================
+        window.addEventListener('load', () => {
+            usuario = JSON.parse(localStorage.getItem('motoja_usuario'));
+            if (!usuario || usuario.tipo !== 'mototaxista') {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('nome-usuario').textContent = `🏍️ ${usuario.nome}`;
+
+            carregarDisponiveis();
+            carregarHistorico();
+
+            // Atualizar corridas disponíveis a cada 5 segundos
+            setInterval(carregarDisponiveis, 5000);
+        });
+
+        // Toggle online/offline
+        document.getElementById('toggle-online').addEventListener('change', async (e) => {
+            const online = e.target.checked;
+            const label = document.getElementById('label-status');
+
+            if (online) {
+                label.textContent = '🟢 Online — recebendo corridas';
+                document.getElementById('secao-disponiveis').classList.remove('d-none');
+            } else {
+                label.textContent = '🔴 Offline — sem receber corridas';
+                document.getElementById('secao-disponiveis').classList.add('d-none');
+            }
+
+            try {
+                await fetch(`${API}/usuarios/${usuario.id}/disponibilidade`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ disponivel: online })
+                });
+            } catch (err) {
+                console.error('Erro ao atualizar status:', err);
+            }
+        });
+
+        // =============================================
+        // CARREGAR CORRIDAS DISPONÍVEIS
+        // =============================================
+        async function carregarDisponiveis() {
+            // Não carregar se está offline ou tem corrida ativa
+            if (!document.getElementById('toggle-online').checked) return;
+            if (corridaAceita) return;
+
+            try {
+                const resp = await fetch(`${API}/corridas/disponiveis`);
+                const corridas = await resp.json();
+
+                const lista = document.getElementById('lista-disponiveis');
+
+                if (corridas.length === 0) {
+                    lista.innerHTML = `
+                        <div class="sem-corridas">
+                            <div class="icone">⏳</div>
+                            <p>Nenhuma corrida disponível no momento.<br>Aguarde novas solicitações...</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                lista.innerHTML = corridas.map(c => `
+                    <div class="card-corrida">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <p class="endereco origem mb-0">${c.origem_endereco}</p>
+                                <p class="endereco destino mb-0">${c.destino_endereco}</p>
+                            </div>
+                            <span class="preco">R$ ${parseFloat(c.preco).toFixed(2)}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="passageiro text-muted">${c.nome_passageiro} • ${c.telefone_passageiro}</small>
+                            <button class="btn btn-aceitar btn-sm" onclick="aceitarCorrida(${c.id})">
+                                ✅ Aceitar
+                            </button>
+                        </div>
+                        ${c.distancia_km ? `<small class="text-muted">📏 ~${parseFloat(c.distancia_km).toFixed(1)} km</small>` : ''}
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.error('Erro ao carregar corridas:', err);
+            }
+        }
+
+        // =============================================
+        // ACEITAR CORRIDA
+        // =============================================
+        async function aceitarCorrida(corridaId) {
+            try {
+                const resp = await fetch(`${API}/corridas/${corridaId}/aceitar`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mototaxista_id: usuario.id })
+                });
+
+                const data = await resp.json();
+
+                if (!resp.ok) {
+                    mostrarAlerta(data.erro, 'danger');
+                    carregarDisponiveis();
+                    return;
+                }
+
+                mostrarAlerta('Corrida aceita! Vá buscar o passageiro.', 'success');
+
+                // Buscar detalhes da corrida
+                const respDetalhes = await fetch(`${API}/corridas/disponiveis`);
+                const todasCorridas = await respDetalhes.json();
+
+                // Buscar nos dados da lista (a corrida pode já não estar em "disponiveis")
+                // Então vamos buscar do histórico
+                const respMinhas = await fetch(`${API}/corridas/minhas/${usuario.id}`);
+                const minhasCorridas = await respMinhas.json();
+                corridaAceita = minhasCorridas.find(c => c.id === corridaId);
+
+                if (corridaAceita) {
+                    mostrarCorridaAceita(corridaAceita);
+                }
+
+            } catch (err) {
+                mostrarAlerta('Erro ao aceitar corrida.', 'danger');
+            }
+        }
+
+        function mostrarCorridaAceita(corrida) {
+            document.getElementById('secao-disponiveis').classList.add('d-none');
+            document.getElementById('secao-corrida-aceita').classList.remove('d-none');
+
+            document.getElementById('aceita-origem').textContent = corrida.origem_endereco;
+            document.getElementById('aceita-destino').textContent = corrida.destino_endereco;
+            document.getElementById('aceita-preco').textContent = `R$ ${parseFloat(corrida.preco).toFixed(2)}`;
+            document.getElementById('aceita-passageiro').textContent = corrida.nome_passageiro || '-';
+            document.getElementById('aceita-telefone').textContent = corrida.telefone_passageiro || '-';
+
+            // Mostrar mapa se tiver coordenadas
+            setTimeout(() => {
+                if (mapaCorrente) {
+                    mapaCorrente.remove();
+                }
+
+                const lat = corrida.origem_lat || -13.3697;
+                const lng = corrida.origem_lng || -39.0731;
+
+                mapaCorrente = L.map('mapa-corrida').setView([lat, lng], 14);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(mapaCorrente);
+
+                if (corrida.origem_lat && corrida.origem_lng) {
+                    L.marker([corrida.origem_lat, corrida.origem_lng], {
+                        icon: L.divIcon({ html: '<div style="font-size:24px;">🟢</div>', iconSize: [30,30], iconAnchor: [15,15], className: '' })
+                    }).addTo(mapaCorrente).bindPopup('📍 Origem');
+                }
+
+                if (corrida.destino_lat && corrida.destino_lng) {
+                    L.marker([corrida.destino_lat, corrida.destino_lng], {
+                        icon: L.divIcon({ html: '<div style="font-size:24px;">🔴</div>', iconSize: [30,30], iconAnchor: [15,15], className: '' })
+                    }).addTo(mapaCorrente).bindPopup('🏁 Destino');
+
+                    // Desenhar linha
+                    L.polyline([
+                        [corrida.origem_lat, corrida.origem_lng],
+                        [corrida.destino_lat, corrida.destino_lng]
+                    ], { color: '#FFC107', weight: 4, dashArray: '10,10' }).addTo(mapaCorrente);
+
+                    // Ajustar zoom
+                    mapaCorrente.fitBounds([
+                        [corrida.origem_lat, corrida.origem_lng],
+                        [corrida.destino_lat, corrida.destino_lng]
+                    ], { padding: [30, 30] });
+                }
+            }, 200);
+        }
+
+        // =============================================
+        // INICIAR / FINALIZAR CORRIDA
+        // =============================================
+        async function iniciarCorrida() {
+            if (!corridaAceita) return;
+
+            try {
+                await fetch(`${API}/corridas/${corridaAceita.id}/iniciar`, {
+                    method: 'PUT'
+                });
+
+                mostrarAlerta('Corrida iniciada! Boa viagem!', 'success');
+                document.getElementById('btn-iniciar').style.display = 'none';
+                document.getElementById('btn-finalizar').style.display = 'block';
+
+            } catch (err) {
+                mostrarAlerta('Erro ao iniciar corrida.', 'danger');
+            }
+        }
+
+        async function finalizarCorrida() {
+            if (!corridaAceita) return;
+            if (!confirm('Finalizar a corrida?')) return;
+
+            try {
+                await fetch(`${API}/corridas/${corridaAceita.id}/finalizar`, {
+                    method: 'PUT'
+                });
+
+                mostrarAlerta('Corrida finalizada! Bom trabalho!', 'success');
+                corridaAceita = null;
+
+                if (mapaCorrente) {
+                    mapaCorrente.remove();
+                    mapaCorrente = null;
+                }
+
+                document.getElementById('secao-corrida-aceita').classList.add('d-none');
+                document.getElementById('secao-disponiveis').classList.remove('d-none');
+                document.getElementById('btn-iniciar').style.display = 'block';
+                document.getElementById('btn-finalizar').style.display = 'none';
+
+                carregarDisponiveis();
+                carregarHistorico();
+
+            } catch (err) {
+                mostrarAlerta('Erro ao finalizar corrida.', 'danger');
+            }
+        }
+
+        async function cancelarCorrida() {
+            if (!corridaAceita) return;
+            if (!confirm('Cancelar a corrida?')) return;
+
+            try {
+                await fetch(`${API}/corridas/${corridaAceita.id}/cancelar`, {
+                    method: 'PUT'
+                });
+
+                corridaAceita = null;
+                if (mapaCorrente) {
+                    mapaCorrente.remove();
+                    mapaCorrente = null;
+                }
+
+                document.getElementById('secao-corrida-aceita').classList.add('d-none');
+                document.getElementById('secao-disponiveis').classList.remove('d-none');
+                document.getElementById('btn-iniciar').style.display = 'block';
+                document.getElementById('btn-finalizar').style.display = 'none';
+
+                mostrarAlerta('Corrida cancelada.', 'warning');
+                carregarDisponiveis();
+                carregarHistorico();
+
+            } catch (err) {
+                mostrarAlerta('Erro ao cancelar.', 'danger');
+            }
+        }
+
+        // =============================================
+        // HISTÓRICO
+        // =============================================
+        async function carregarHistorico() {
+            try {
+                const resp = await fetch(`${API}/corridas/minhas/${usuario.id}`);
+                const corridas = await resp.json();
+
+                const lista = document.getElementById('historico-lista');
+                const finalizadas = corridas.filter(c => c.status === 'finalizada' || c.status === 'cancelada');
+
+                if (finalizadas.length === 0) {
+                    lista.innerHTML = `<p class="text-muted text-center">Nenhuma corrida realizada ainda.</p>`;
+                    return;
+                }
+
+                lista.innerHTML = finalizadas.slice(0, 10).map(c => `
+                    <div class="card-corrida" style="border-left-color: ${c.status === 'finalizada' ? '#28a745' : '#dc3545'}; padding:15px;">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">${formatarData(c.criado_em)}</small>
+                            <span class="status-${c.status}">${c.status === 'finalizada' ? '✅ Finalizada' : '❌ Cancelada'}</span>
+                        </div>
+                        <p class="endereco origem mb-0 mt-1">${c.origem_endereco}</p>
+                        <p class="endereco destino mb-1">${c.destino_endereco}</p>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">👤 ${c.nome_passageiro || '-'}</span>
+                            <span class="fw-bold text-success">R$ ${parseFloat(c.preco).toFixed(2)}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.error('Erro ao carregar histórico:', err);
+            }
+        }
+
+        // =============================================
+        // UTILITÁRIOS
+        // =============================================
+        function formatarData(dataStr) {
+            const d = new Date(dataStr);
+            return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function mostrarAlerta(msg, tipo) {
+            const el = document.getElementById('alerta');
+            el.textContent = msg;
+            el.className = `alert alert-${tipo}`;
+            el.classList.remove('d-none');
+            setTimeout(() => el.classList.add('d-none'), 5000);
+        }
+
+        function sair() {
+            localStorage.removeItem('motoja_usuario');
+            window.location.href = 'index.html';
+        }
+    </script>
+
+</body>
+</html>
