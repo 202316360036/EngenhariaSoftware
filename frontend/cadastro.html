@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoJá - Cadastro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+    <div class="login-container" style="max-width: 480px;">
+        <div class="login-card">
+            <!-- Logo -->
+            <div class="login-logo">
+                <h1>Moto<span>Já</span></h1>
+                <p>Crie sua conta</p>
+            </div>
+
+            <!-- Alertas -->
+            <div id="alerta-erro" class="alert alert-danger d-none" role="alert"></div>
+            <div id="alerta-sucesso" class="alert alert-success d-none" role="alert"></div>
+
+            <!-- Formulário de Cadastro -->
+            <form id="form-cadastro">
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Nome completo</label>
+                    <input type="text" class="form-control" id="nome" placeholder="Seu nome" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">E-mail</label>
+                    <input type="email" class="form-control" id="email" placeholder="seu@email.com" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="telefone" class="form-label">Telefone</label>
+                    <input type="tel" class="form-control" id="telefone" placeholder="(75) 99999-0000" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="senha" class="form-label">Senha</label>
+                    <input type="password" class="form-control" id="senha" placeholder="Crie uma senha" required minlength="6">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Você é:</label>
+                    <div class="d-flex gap-2">
+                        <div class="form-check flex-fill">
+                            <input class="form-check-input" type="radio" name="tipo" id="tipo-passageiro" value="passageiro" checked>
+                            <label class="form-check-label" for="tipo-passageiro">
+                                Passageiro
+                            </label>
+                        </div>
+                        <div class="form-check flex-fill">
+                            <input class="form-check-input" type="radio" name="tipo" id="tipo-mototaxista" value="mototaxista">
+                            <label class="form-check-label" for="tipo-mototaxista">
+                                Mototaxista
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campos extras do mototaxista (escondidos por padrão) -->
+                <div id="campos-mototaxista" class="d-none">
+                    <div class="mb-3">
+                        <label for="cnh" class="form-label">Número da CNH</label>
+                        <input type="text" class="form-control" id="cnh" placeholder="00000000000">
+                    </div>
+                    <div class="mb-3">
+                        <label for="placa" class="form-label">Placa da moto</label>
+                        <input type="text" class="form-control" id="placa" placeholder="ABC-1234">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-motoja w-100 mb-3">Cadastrar</button>
+
+                <div class="text-center">
+                    <span class="text-muted">Já tem conta?</span>
+                    <a href="index.html" class="text-decoration-none" style="color: #FFC107; font-weight: 600;"> Fazer login</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="footer-motoja">
+            MotoJá &copy; 2025 — Valença, Bahia
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        var API = '/api';
+
+        // Mostrar/esconder campos de mototaxista
+        document.querySelectorAll('input[name="tipo"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const campos = document.getElementById('campos-mototaxista');
+                if (e.target.value === 'mototaxista') {
+                    campos.classList.remove('d-none');
+                } else {
+                    campos.classList.add('d-none');
+                }
+            });
+        });
+
+        // Cadastro
+        document.getElementById('form-cadastro').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            esconderAlertas();
+
+            const tipo = document.querySelector('input[name="tipo"]:checked').value;
+
+            const dados = {
+                nome: document.getElementById('nome').value,
+                email: document.getElementById('email').value,
+                telefone: document.getElementById('telefone').value,
+                senha: document.getElementById('senha').value,
+                tipo: tipo,
+                cnh: tipo === 'mototaxista' ? document.getElementById('cnh').value : null,
+                placa_moto: tipo === 'mototaxista' ? document.getElementById('placa').value : null
+            };
+
+            // Validação do mototaxista
+            if (tipo === 'mototaxista' && (!dados.cnh || !dados.placa_moto)) {
+                mostrarErro('Mototaxista precisa informar CNH e placa da moto.');
+                return;
+            }
+
+            try {
+                const resp = await fetch(`${API}/usuarios/cadastro`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                const data = await resp.json();
+
+                if (!resp.ok) {
+                    mostrarErro(data.erro);
+                    return;
+                }
+
+                mostrarSucesso('Cadastro realizado! Redirecionando pro login...');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+
+            } catch (err) {
+                mostrarErro('Erro ao conectar com o servidor.');
+            }
+        });
+
+        function mostrarErro(msg) {
+            const el = document.getElementById('alerta-erro');
+            el.textContent = msg;
+            el.classList.remove('d-none');
+        }
+
+        function mostrarSucesso(msg) {
+            const el = document.getElementById('alerta-sucesso');
+            el.textContent = msg;
+            el.classList.remove('d-none');
+        }
+
+        function esconderAlertas() {
+            document.getElementById('alerta-erro').classList.add('d-none');
+            document.getElementById('alerta-sucesso').classList.add('d-none');
+        }
+    </script>
+
+</body>
+</html>

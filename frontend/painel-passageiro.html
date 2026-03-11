@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoJa - Passageiro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-motoja">
+        <div class="container-fluid">
+            <span class="navbar-brand">Moto<span style="color:#FFC107">Ja</span></span>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-white" id="nome-usuario" style="font-size:0.9rem;"></span>
+                <button class="btn btn-sm btn-sair btn-outline-warning" onclick="sair()">Sair</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-3 mb-5">
+        <div id="alerta" class="alert d-none" role="alert"></div>
+
+        <div id="secao-solicitar" class="painel-info mb-3">
+            <h5>Pedir uma corrida</h5>
+            <div id="mapa" class="mb-3"></div>
+            <p class="text-muted" style="font-size:0.8rem;">Clique no mapa: primeiro <strong>origem</strong> (verde), depois <strong>destino</strong> (vermelho).</p>
+            <div class="row g-2 mb-3">
+                <div class="col-12">
+                    <label class="form-label">Origem (de onde voce sai)</label>
+                    <input type="text" class="form-control" id="origem" placeholder="Ex: Praca da Independencia">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Destino (para onde vai)</label>
+                    <input type="text" class="form-control" id="destino" placeholder="Ex: Rodoviaria de Valenca">
+                </div>
+            </div>
+            <div id="estimativa" class="d-none mb-3 p-3" style="background:#f8f9fa; border-radius:8px;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div><small class="text-muted">Distancia</small><p class="mb-0 fw-bold" id="distancia-texto">0 km</p></div>
+                    <div class="text-end"><small class="text-muted">Preco estimado</small><p class="mb-0 fw-bold fs-4 text-success" id="preco-texto">R$ 0,00</p></div>
+                </div>
+            </div>
+            <button class="btn btn-motoja w-100" id="btn-solicitar" onclick="solicitarCorrida()">Solicitar Mototaxi</button>
+        </div>
+
+        <div id="secao-corrida-ativa" class="d-none">
+            <div class="card-corrida">
+                <h5 class="mb-3">Sua corrida</h5>
+                <div class="status-timeline" id="timeline">
+                    <div class="status-step" id="step-solicitada"><div class="step-line"></div><div class="step-dot">1</div><div class="step-label">Solicitada</div></div>
+                    <div class="status-step" id="step-aceita"><div class="step-line"></div><div class="step-dot">2</div><div class="step-label">Aceita</div></div>
+                    <div class="status-step" id="step-andamento"><div class="step-line"></div><div class="step-dot">3</div><div class="step-label">Em andamento</div></div>
+                    <div class="status-step" id="step-finalizada"><div class="step-dot">4</div><div class="step-label">Finalizada</div></div>
+                </div>
+                <div id="info-mototaxista" class="d-none mb-3 p-2" style="background:#f0f0f0; border-radius:8px;">
+                    <strong>Mototaxista:</strong> <span id="moto-nome"></span><br>
+                    <strong>Telefone:</strong> <span id="moto-telefone"></span><br>
+                    <strong>Placa:</strong> <span id="moto-placa"></span>
+                </div>
+                <p class="endereco origem mb-1" id="corrida-origem"></p>
+                <p class="endereco destino mb-2" id="corrida-destino"></p>
+                <p class="preco mb-3" id="corrida-preco"></p>
+                <button class="btn btn-recusar w-100" id="btn-cancelar" onclick="cancelarCorrida()">Cancelar corrida</button>
+            </div>
+        </div>
+
+        <div class="painel-info mt-3">
+            <h5>Ultimas corridas</h5>
+            <div id="historico-lista"><div class="sem-corridas"><p>Nenhuma corrida ainda.</p></div></div>
+        </div>
+    </div>
+
+    <div id="modal-pagamento" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <h5 class="text-center mb-3">Como deseja pagar?</h5>
+            <p class="text-center text-muted mb-2" id="pag-preco"></p>
+            <div class="pagamento-opcoes">
+                <div class="pagamento-opcao" onclick="selecionarPagamento('dinheiro')"><span class="icone-pag">R$</span><span class="texto-pag">Dinheiro</span></div>
+                <div class="pagamento-opcao" onclick="selecionarPagamento('pix')"><span class="icone-pag">PIX</span><span class="texto-pag">Pix</span></div>
+                <div class="pagamento-opcao" onclick="selecionarPagamento('cartao')"><span class="icone-pag">CARD</span><span class="texto-pag">Cartao</span></div>
+            </div>
+            <div id="pix-info" class="d-none">
+                <div class="pix-box">
+                    <strong>Pague via Pix</strong>
+                    <div class="pix-qr" id="pix-qr-code">QR Code<br>(simulacao)</div>
+                    <div>Chave Pix:</div>
+                    <div class="pix-chave" id="pix-chave">motoja@pagamentos.com</div>
+                    <button class="btn btn-sm btn-outline-success mt-2" onclick="copiarChavePix()">Copiar chave</button>
+                </div>
+            </div>
+            <div id="cartao-info" class="d-none text-center p-3" style="background:#f0f0f0; border-radius:8px; margin-top:10px;">
+                <p>Passe o cartao na maquininha do mototaxista</p>
+                <small class="text-muted">Credito ou debito</small>
+            </div>
+            <button class="btn btn-motoja w-100 mt-3" id="btn-confirmar-pag" onclick="confirmarPagamento()" disabled>Confirmar pagamento</button>
+        </div>
+    </div>
+
+    <div id="modal-avaliacao" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <div class="avaliacao-container">
+                <h5>Avalie o mototaxista</h5>
+                <p class="text-muted" id="aval-nome"></p>
+                <div class="estrelas" id="estrelas">
+                    <span class="estrela" data-nota="1" onclick="clicarEstrela(1)">&#9733;</span>
+                    <span class="estrela" data-nota="2" onclick="clicarEstrela(2)">&#9733;</span>
+                    <span class="estrela" data-nota="3" onclick="clicarEstrela(3)">&#9733;</span>
+                    <span class="estrela" data-nota="4" onclick="clicarEstrela(4)">&#9733;</span>
+                    <span class="estrela" data-nota="5" onclick="clicarEstrela(5)">&#9733;</span>
+                </div>
+                <button class="btn btn-motoja w-100" id="btn-avaliar" onclick="enviarAvaliacao()" disabled>Enviar avaliacao</button>
+                <button class="btn btn-link text-muted mt-2" onclick="fecharAvaliacao()">Pular</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        var API = '/api';
+        var usuario = null;
+        var mapa = null;
+        var marcadorOrigem = null;
+        var marcadorDestino = null;
+        var linhaRota = null;
+        var cliques = 0;
+        var corridaAtual = null;
+        var notaSelecionada = 0;
+        var pagSelecionado = null;
+        var VALENCA_LAT = -13.3697;
+        var VALENCA_LNG = -39.0731;
+
+        window.addEventListener('load', function() {
+            usuario = JSON.parse(localStorage.getItem('motoja_usuario'));
+            if (!usuario || usuario.tipo !== 'passageiro') { window.location.href = 'index.html'; return; }
+            document.getElementById('nome-usuario').textContent = usuario.nome;
+            iniciarMapa();
+            verificarCorridaAtiva();
+            carregarHistorico();
+        });
+
+        function criarIcone(cor) {
+            return L.divIcon({
+                html: '<div style="width:16px;height:16px;background:' + cor + ';border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>',
+                iconSize: [16, 16],
+                iconAnchor: [8, 8],
+                className: ''
+            });
+        }
+
+        function iniciarMapa() {
+            mapa = L.map('mapa').setView([VALENCA_LAT, VALENCA_LNG], 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(mapa);
+            mapa.on('click', function(e) {
+                var lat = e.latlng.lat;
+                var lng = e.latlng.lng;
+                if (cliques === 0) {
+                    if (marcadorOrigem) mapa.removeLayer(marcadorOrigem);
+                    marcadorOrigem = L.marker([lat, lng], { icon: criarIcone('#28a745') }).addTo(mapa);
+                    marcadorOrigem.coords = { lat: lat, lng: lng };
+                    if (!document.getElementById('origem').value) {
+                        document.getElementById('origem').value = 'Lat: ' + lat.toFixed(4) + ', Lng: ' + lng.toFixed(4);
+                    }
+                    cliques = 1;
+                } else {
+                    if (marcadorDestino) mapa.removeLayer(marcadorDestino);
+                    marcadorDestino = L.marker([lat, lng], { icon: criarIcone('#dc3545') }).addTo(mapa);
+                    marcadorDestino.coords = { lat: lat, lng: lng };
+                    if (!document.getElementById('destino').value) {
+                        document.getElementById('destino').value = 'Lat: ' + lat.toFixed(4) + ', Lng: ' + lng.toFixed(4);
+                    }
+                    cliques = 0;
+                    if (linhaRota) mapa.removeLayer(linhaRota);
+                    linhaRota = L.polyline([
+                        [marcadorOrigem.coords.lat, marcadorOrigem.coords.lng],
+                        [lat, lng]
+                    ], { color: '#FFC107', weight: 4, dashArray: '10, 10' }).addTo(mapa);
+                    calcularEstimativa();
+                }
+            });
+        }
+
+        function calcularDistancia() {
+            if (!marcadorOrigem || !marcadorDestino) return 0;
+            var o = marcadorOrigem.coords;
+            var d = marcadorDestino.coords;
+            var R = 6371;
+            var dLat = (d.lat - o.lat) * Math.PI / 180;
+            var dLng = (d.lng - o.lng) * Math.PI / 180;
+            var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(o.lat * Math.PI / 180) * Math.cos(d.lat * Math.PI / 180) *
+                    Math.sin(dLng/2) * Math.sin(dLng/2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c * 1.3;
+        }
+
+        function calcularEstimativa() {
+            var dist = calcularDistancia();
+            var preco = Math.ceil(5 + dist * 2);
+            if (preco < 5) preco = 5;
+            document.getElementById('distancia-texto').textContent = dist.toFixed(1) + ' km';
+            document.getElementById('preco-texto').textContent = 'R$ ' + preco.toFixed(2);
+            document.getElementById('estimativa').classList.remove('d-none');
+        }
+
+        function solicitarCorrida() {
+            var origem = document.getElementById('origem').value.trim();
+            var destino = document.getElementById('destino').value.trim();
+            if (!origem || !destino) { mostrarAlerta('Informe origem e destino.', 'danger'); return; }
+            var dist = calcularDistancia();
+            var btn = document.getElementById('btn-solicitar');
+            btn.disabled = true;
+            btn.textContent = 'Solicitando...';
+
+            var body = {
+                passageiro_id: usuario.id,
+                origem_endereco: origem,
+                destino_endereco: destino,
+                origem_lat: marcadorOrigem ? marcadorOrigem.coords.lat : null,
+                origem_lng: marcadorOrigem ? marcadorOrigem.coords.lng : null,
+                destino_lat: marcadorDestino ? marcadorDestino.coords.lat : null,
+                destino_lng: marcadorDestino ? marcadorDestino.coords.lng : null,
+                distancia_km: dist
+            };
+
+            fetch(API + '/corridas/solicitar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) {
+                if (data.erro) { mostrarAlerta(data.erro, 'danger'); }
+                else { mostrarAlerta('Corrida solicitada! Aguardando mototaxista...', 'success'); verificarCorridaAtiva(); }
+            })
+            .catch(function() { mostrarAlerta('Erro ao conectar com o servidor.', 'danger'); })
+            .finally(function() { btn.disabled = false; btn.textContent = 'Solicitar Mototaxi'; });
+        }
+
+        function verificarCorridaAtiva() {
+            fetch(API + '/corridas/ativa/' + usuario.id)
+            .then(function(r) { return r.json(); })
+            .then(function(corrida) {
+                if (corrida) { corridaAtual = corrida; mostrarCorridaAtiva(corrida); }
+                else {
+                    document.getElementById('secao-solicitar').classList.remove('d-none');
+                    document.getElementById('secao-corrida-ativa').classList.add('d-none');
+                }
+            })
+            .catch(function() {});
+        }
+
+        function mostrarCorridaAtiva(c) {
+            document.getElementById('secao-solicitar').classList.add('d-none');
+            document.getElementById('secao-corrida-ativa').classList.remove('d-none');
+            document.getElementById('corrida-origem').textContent = c.origem_endereco;
+            document.getElementById('corrida-destino').textContent = c.destino_endereco;
+            document.getElementById('corrida-preco').textContent = 'R$ ' + parseFloat(c.preco).toFixed(2);
+
+            var steps = ['solicitada', 'aceita', 'em_andamento', 'finalizada'];
+            var statusIdx = steps.indexOf(c.status);
+            var stepIds = ['step-solicitada', 'step-aceita', 'step-andamento', 'step-finalizada'];
+            for (var i = 0; i < stepIds.length; i++) {
+                var el = document.getElementById(stepIds[i]);
+                if (i < statusIdx) el.className = 'status-step done';
+                else if (i === statusIdx) el.className = 'status-step active';
+                else el.className = 'status-step';
+            }
+
+            if (c.status === 'aceita' || c.status === 'em_andamento') {
+                document.getElementById('info-mototaxista').classList.remove('d-none');
+                document.getElementById('moto-nome').textContent = c.nome_mototaxista || '-';
+                document.getElementById('moto-telefone').textContent = c.telefone_mototaxista || '-';
+                document.getElementById('moto-placa').textContent = c.placa_moto || '-';
+            } else {
+                document.getElementById('info-mototaxista').classList.add('d-none');
+            }
+
+            document.getElementById('btn-cancelar').style.display = c.status === 'em_andamento' ? 'none' : 'block';
+
+            if (!window.intervaloCorrida) {
+                window.intervaloCorrida = setInterval(function() {
+                    fetch(API + '/corridas/ativa/' + usuario.id)
+                    .then(function(r) { return r.json(); })
+                    .then(function(cor) {
+                        if (cor) { corridaAtual = cor; mostrarCorridaAtiva(cor); }
+                        else {
+                            clearInterval(window.intervaloCorrida);
+                            window.intervaloCorrida = null;
+                            if (corridaAtual && corridaAtual.status === 'em_andamento') { abrirPagamento(); }
+                            else {
+                                document.getElementById('secao-solicitar').classList.remove('d-none');
+                                document.getElementById('secao-corrida-ativa').classList.add('d-none');
+                            }
+                            carregarHistorico();
+                        }
+                    });
+                }, 3000);
+            }
+        }
+
+        function cancelarCorrida() {
+            if (!corridaAtual || !confirm('Cancelar corrida?')) return;
+            fetch(API + '/corridas/' + corridaAtual.id + '/cancelar', { method: 'PUT' })
+            .then(function() {
+                clearInterval(window.intervaloCorrida);
+                window.intervaloCorrida = null;
+                document.getElementById('secao-solicitar').classList.remove('d-none');
+                document.getElementById('secao-corrida-ativa').classList.add('d-none');
+                mostrarAlerta('Corrida cancelada.', 'warning');
+                carregarHistorico();
+            });
+        }
+
+        function abrirPagamento() {
+            document.getElementById('secao-corrida-ativa').classList.add('d-none');
+            document.getElementById('pag-preco').textContent = 'Valor: R$ ' + parseFloat(corridaAtual.preco).toFixed(2);
+            document.getElementById('modal-pagamento').style.display = 'flex';
+            pagSelecionado = null;
+            var opcoes = document.querySelectorAll('.pagamento-opcao');
+            for (var i = 0; i < opcoes.length; i++) opcoes[i].classList.remove('selecionado');
+            document.getElementById('pix-info').classList.add('d-none');
+            document.getElementById('cartao-info').classList.add('d-none');
+            document.getElementById('btn-confirmar-pag').disabled = true;
+        }
+
+        function selecionarPagamento(tipo) {
+            pagSelecionado = tipo;
+            var opcoes = document.querySelectorAll('.pagamento-opcao');
+            for (var i = 0; i < opcoes.length; i++) opcoes[i].classList.remove('selecionado');
+            event.currentTarget.classList.add('selecionado');
+            document.getElementById('pix-info').classList.toggle('d-none', tipo !== 'pix');
+            document.getElementById('cartao-info').classList.toggle('d-none', tipo !== 'cartao');
+            document.getElementById('btn-confirmar-pag').disabled = false;
+        }
+
+        function copiarChavePix() {
+            navigator.clipboard.writeText('motoja@pagamentos.com').then(function() {
+                mostrarAlerta('Chave Pix copiada!', 'success');
+            });
+        }
+
+        function confirmarPagamento() {
+            if (!pagSelecionado) return;
+            fetch(API + '/corridas/' + corridaAtual.id + '/confirmar-pagamento', { method: 'PUT' })
+            .then(function() {
+                document.getElementById('modal-pagamento').style.display = 'none';
+                abrirAvaliacao();
+            })
+            .catch(function() { mostrarAlerta('Erro ao confirmar.', 'danger'); });
+        }
+
+        function abrirAvaliacao() {
+            document.getElementById('aval-nome').textContent = corridaAtual.nome_mototaxista ? 'Mototaxista: ' + corridaAtual.nome_mototaxista : '';
+            notaSelecionada = 0;
+            var estrelas = document.querySelectorAll('.estrela');
+            for (var i = 0; i < estrelas.length; i++) estrelas[i].classList.remove('ativa');
+            document.getElementById('btn-avaliar').disabled = true;
+            document.getElementById('modal-avaliacao').style.display = 'flex';
+        }
+
+        function clicarEstrela(nota) {
+            notaSelecionada = nota;
+            var estrelas = document.querySelectorAll('.estrela');
+            for (var i = 0; i < estrelas.length; i++) {
+                if (parseInt(estrelas[i].getAttribute('data-nota')) <= nota) {
+                    estrelas[i].classList.add('ativa');
+                } else {
+                    estrelas[i].classList.remove('ativa');
+                }
+            }
+            document.getElementById('btn-avaliar').disabled = false;
+        }
+
+        function enviarAvaliacao() {
+            fetch(API + '/corridas/' + corridaAtual.id + '/avaliar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuario_id: usuario.id, tipo_avaliador: 'passageiro', nota: notaSelecionada })
+            })
+            .then(function() { mostrarAlerta('Avaliacao enviada! ' + notaSelecionada + ' estrela(s)', 'success'); })
+            .catch(function() {})
+            .finally(function() { fecharAvaliacao(); });
+        }
+
+        function fecharAvaliacao() {
+            document.getElementById('modal-avaliacao').style.display = 'none';
+            document.getElementById('secao-solicitar').classList.remove('d-none');
+            carregarHistorico();
+        }
+
+        function carregarHistorico() {
+            fetch(API + '/corridas/minhas/' + usuario.id)
+            .then(function(r) { return r.json(); })
+            .then(function(corridas) {
+                var lista = document.getElementById('historico-lista');
+                var fin = corridas.filter(function(c) { return c.status === 'finalizada' || c.status === 'cancelada'; });
+                if (fin.length === 0) {
+                    lista.innerHTML = '<div class="sem-corridas"><p>Nenhuma corrida ainda.</p></div>';
+                    return;
+                }
+                var pagLabels = { dinheiro: '[R$]', pix: '[PIX]', cartao: '[CARD]' };
+                var html = '';
+                for (var i = 0; i < fin.length; i++) {
+                    var c = fin[i];
+                    var statusText = c.status === 'finalizada' ? 'Finalizada' : 'Cancelada';
+                    var borderColor = c.status === 'finalizada' ? '#28a745' : '#dc3545';
+                    var stars = '';
+                    if (c.avaliacao_passageiro) {
+                        for (var s = 0; s < c.avaliacao_passageiro; s++) stars += '* ';
+                    }
+                    var pagText = c.forma_pagamento ? (pagLabels[c.forma_pagamento] || '') : '';
+                    var motoName = c.nome_mototaxista || '';
+                    html += '<div class="card-corrida" style="border-left-color:' + borderColor + ';">' +
+                        '<div class="d-flex justify-content-between"><small class="text-muted">' + formatarData(c.criado_em) + '</small>' +
+                        '<span class="status-badge status-' + c.status + '">' + statusText + '</span></div>' +
+                        '<p class="endereco mb-0 mt-1">' + c.origem_endereco + '</p>' +
+                        '<p class="endereco mb-1">' + c.destino_endereco + '</p>' +
+                        '<div class="d-flex justify-content-between align-items-center">' +
+                        '<span class="text-muted">' + motoName + ' ' + pagText + '</span>' +
+                        '<span><span class="preco" style="font-size:1.1rem;">R$ ' + parseFloat(c.preco).toFixed(2) + '</span> ' + stars + '</span>' +
+                        '</div></div>';
+                }
+                lista.innerHTML = html;
+            })
+            .catch(function() {});
+        }
+
+        function formatarData(d) {
+            var dt = new Date(d);
+            return dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function mostrarAlerta(msg, tipo) {
+            var el = document.getElementById('alerta');
+            el.textContent = msg;
+            el.className = 'alert alert-' + tipo;
+            el.classList.remove('d-none');
+            setTimeout(function() { el.classList.add('d-none'); }, 4000);
+        }
+
+        function sair() {
+            localStorage.removeItem('motoja_usuario');
+            if (window.intervaloCorrida) clearInterval(window.intervaloCorrida);
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
